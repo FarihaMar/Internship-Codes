@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auto Fill & Submit Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef;
+      text-align: center;
+      padding: 50px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      width: 250px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Auto Fill & Submit Form</h2>
+
+  <form id="myForm">
+    <input type="text" id="firstName" placeholder="First Name"><br>
+    <input type="text" id="lastName" placeholder="Last Name"><br>
+    <input type="number" id="age" placeholder="Age"><br>
+    <input type="email" id="email" placeholder="Email"><br>
+    
+    <button type="button" onclick="autoFill()">Auto Fill</button>
+    <button type="button" onclick="autoSubmit()">Auto Submit</button>
+  </form>
+
+  <script>
+    function autoFill() {
+      document.getElementById("firstName").value = "Fariha";
+      document.getElementById("lastName").value = "M";
+      document.getElementById("age").value = "22";
+      document.getElementById("email").value = "fariha@gmail.com";
+    }
+
+    function autoSubmit() {
+      setTimeout(function() {
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+        const age = document.getElementById("age").value;
+        const email = document.getElementById("email").value;
+
+        alert(`Form Submitted!\n\nFirst Name: ${firstName}\nLast Name: ${lastName}\nAge: ${age}\nEmail: ${email}`);
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
