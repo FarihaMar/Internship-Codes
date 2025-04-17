@@ -1,0 +1,41 @@
+const profileData = (() => {
+  const name = (() => {
+    const h1 = document.querySelector('h1');
+    return h1?.innerText.trim() || null;
+  })();
+
+  const headline = document.querySelector('div.text-body-medium.break-words')?.innerText.trim() || null;
+
+  const location = (() => {
+    const el = Array.from(document.querySelectorAll('span')).find(span =>
+      span.innerText?.match(/Tamil Nadu|India|Chennai/i)
+    );
+    return el?.innerText.trim() || null;
+  })();
+
+  const connections = (() => {
+    const span = Array.from(document.querySelectorAll('span')).find(el =>
+      el.innerText?.toLowerCase().includes('connections')
+    );
+    return span?.innerText.trim() || null;
+  })();
+
+  const education = (() => {
+    const educationItems = document.querySelectorAll('li.artdeco-list__item');
+
+    return Array.from(educationItems).map(item => {
+      const school = item.querySelector('div.t-bold span[aria-hidden="true"]')?.innerText.trim() || null;
+      const degree = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.innerText.trim() || null;
+      const dates = item.querySelector('span.t-black--light span[aria-hidden="true"]')?.innerText.trim() || null;
+
+      return { school, degree, dates };
+    }).filter(entry =>
+      entry.degree?.toLowerCase().includes('bsc') ||
+      entry.degree?.toLowerCase().includes('msc')
+    );
+  })();
+
+  return { name, headline, location, connections, education };
+})();
+
+console.log(profileData);
