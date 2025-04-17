@@ -1,41 +1,65 @@
-const profileData = (() => {
-  const name = (() => {
-    const h1 = document.querySelector('h1');
-    return h1?.innerText.trim() || null;
-  })();
+(function () {
+    function getTextFrom(selector) {
+        const el = document.querySelector(selector);
+        return el ? el.textContent.trim() : '';
+    }
 
-  const headline = document.querySelector('div.text-body-medium.break-words')?.innerText.trim() || null;
+    function getName() {
+        const nameEl = document.querySelector('h1');
+        return nameEl ? nameEl.innerText.trim() : '';
+    }
 
-  const location = (() => {
-    const el = Array.from(document.querySelectorAll('span')).find(span =>
-      span.innerText?.match(/Tamil Nadu|India|Chennai/i)
-    );
-    return el?.innerText.trim() || null;
-  })();
+    function getConnections() {
+        // Look for span with "connections" in text
+        const spans = document.querySelectorAll('span');
+        for (const span of spans) {
+            if (span.innerText.includes('connections')) {
+                return span.innerText.trim();
+            }
+        }
+        return '';
+    }
 
-  const connections = (() => {
-    const span = Array.from(document.querySelectorAll('span')).find(el =>
-      el.innerText?.toLowerCase().includes('connections')
-    );
-    return span?.innerText.trim() || null;
-  })();
+    function getExperience() {
+        const experienceSection = document.querySelector('#experience')?.closest('section');
+        if (!experienceSection) return [];
 
-  const education = (() => {
-    const educationItems = document.querySelectorAll('li.artdeco-list__item');
+        const items = experienceSection.querySelectorAll('li.artdeco-list__item');
+        return Array.from(items).map(item => {
+            const roleEl = item.querySelector('.t-bold span');
+            const companyEl = item.querySelector('.t-14.t-normal span');
 
-    return Array.from(educationItems).map(item => {
-      const school = item.querySelector('div.t-bold span[aria-hidden="true"]')?.innerText.trim() || null;
-      const degree = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.innerText.trim() || null;
-      const dates = item.querySelector('span.t-black--light span[aria-hidden="true"]')?.innerText.trim() || null;
+            return {
+                title: roleEl?.innerText.trim() || '',
+                company: companyEl?.innerText.trim() || ''
+            };
+        }).filter(exp => exp.title || exp.company);
+    }
 
-      return { school, degree, dates };
-    }).filter(entry =>
-      entry.degree?.toLowerCase().includes('bsc') ||
-      entry.degree?.toLowerCase().includes('msc')
-    );
-  })();
+    function getEducation() {
+        const educationSection = document.querySelector('#education')?.closest('section');
+        if (!educationSection) return [];
 
-  return { name, headline, location, connections, education };
+        const items = educationSection.querySelectorAll('li.artdeco-list__item');
+        return Array.from(items).map(item => {
+            const schoolEl = item.querySelector('.t-bold span');
+            const degreeEl = item.querySelector('.t-14.t-normal span');
+
+            return {
+                school: schoolEl?.innerText.trim() || '',
+                degree: degreeEl?.innerText.trim() || ''
+            };
+        }).filter(edu => edu.school || edu.degree);
+    }
+
+    const profile = {
+        name: getName(),
+        headline: getTextFrom('.text-body-medium.break-words'),
+        location: getTextFrom('.text-body-small.inline.t-black--light.break-words'),
+        connections: getConnections(),
+        experience: getExperience(),
+        education: getEducation()
+    };
+
+    console.log(profile);
 })();
-
-console.log(profileData);
