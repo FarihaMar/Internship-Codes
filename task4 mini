@@ -1,0 +1,57 @@
+setTimeout(() => {
+    // 1. Sort by → Latest
+    const sortByBtn = document.querySelector('#searchFilter_sortBy');
+    if (sortByBtn) {
+        sortByBtn.click();
+        console.log("Clicked 'Sort by'");
+
+        setTimeout(() => {
+            const latestOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Latest");
+            if (latestOption) {
+                latestOption.click();
+                console.log("Selected 'Latest'");
+            }
+        }, 800);
+    }
+
+    // 2. Date Posted → Past week
+    const datePostedBtn = document.querySelector('#searchFilter_datePosted');
+    if (datePostedBtn) {
+        setTimeout(() => {
+            datePostedBtn.click();
+            console.log("Clicked 'Date posted'");
+
+            setTimeout(() => {
+                const pastWeekOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Past week");
+                if (pastWeekOption) {
+                    pastWeekOption.click();
+                    console.log("Selected 'Past week'");
+                }
+            }, 800);
+        }, 1500);
+    }
+
+    // 3. Content Type → Videos and Images
+    const contentTypeBtn = document.querySelector('#searchFilter_contentType');
+    if (contentTypeBtn) {
+        setTimeout(() => {
+            contentTypeBtn.click();
+            console.log("Clicked 'Content type'");
+
+            setTimeout(() => {
+                const videosOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Videos");
+                const imagesOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Images");
+
+                if (videosOption) {
+                    videosOption.click();
+                    console.log("Selected 'Videos'");
+                }
+                if (imagesOption) {
+                    imagesOption.click();
+                    console.log("Selected 'Images'");
+                }
+            }, 800);
+        }, 3000);
+    }
+
+}, 2000); // Wait 2 seconds for page load
