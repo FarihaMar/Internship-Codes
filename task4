@@ -1,57 +1,40 @@
-setTimeout(() => {
-    // 1. Sort by → Latest
-    const sortByBtn = document.querySelector('#searchFilter_sortBy');
-    if (sortByBtn) {
-        sortByBtn.click();
-        console.log("Clicked 'Sort by'");
+(async () => {
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-        setTimeout(() => {
-            const latestOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Latest");
-            if (latestOption) {
-                latestOption.click();
-                console.log("Selected 'Latest'");
-            }
-        }, 800);
+  // 1. Open "All filters" panel
+  document.querySelector('button[aria-label*="Show all filters"]')?.click();
+  await sleep(1500); // wait for the modal to fully open
+
+  // Helper to select a filter option by fieldset legend and label text
+  const apply = async (fieldsetText, optionText) => {
+    const fs = [...document.querySelectorAll('fieldset')]
+      .find(f => f.innerText.includes(fieldsetText));
+    if (!fs) return console.warn(`❌ Fieldset not found: ${fieldsetText}`);
+    const lbl = [...fs.querySelectorAll('label')];
+    const match = lbl.find(l => l.innerText.includes(optionText));
+    if (match) {
+      match.click();
+      console.log(`✅ Selected ${optionText} in ${fieldsetText}`);
+    } else {
+      console.warn(`❌ Option not found: ${optionText} in ${fieldsetText}`);
     }
+    await sleep(1200); // longer wait after each selection
+  };
 
-    // 2. Date Posted → Past week
-    const datePostedBtn = document.querySelector('#searchFilter_datePosted');
-    if (datePostedBtn) {
-        setTimeout(() => {
-            datePostedBtn.click();
-            console.log("Clicked 'Date posted'");
+  // 2. Apply your filters
+  await apply('Sort by',      'Latest');
+  await apply('Date posted',  'Past month'); // ⬅ changed here
+  await apply('Content type', 'Images');
+  await apply('Posted by',    'People you follow');
 
-            setTimeout(() => {
-                const pastWeekOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Past week");
-                if (pastWeekOption) {
-                    pastWeekOption.click();
-                    console.log("Selected 'Past week'");
-                }
-            }, 800);
-        }, 1500);
-    }
+  // 3. Click "Show results"
+  const btn = [...document.querySelectorAll('button')]
+    .find(b => /show results/i.test(b.innerText));
+  if (btn) {
+    btn.click();
+    console.log('✅ Clicked Show results');
+  } else {
+    console.warn('❌ Show results button not found');
+  }
+})();
 
-    // 3. Content Type → Videos and Images
-    const contentTypeBtn = document.querySelector('#searchFilter_contentType');
-    if (contentTypeBtn) {
-        setTimeout(() => {
-            contentTypeBtn.click();
-            console.log("Clicked 'Content type'");
-
-            setTimeout(() => {
-                const videosOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Videos");
-                const imagesOption = [...document.querySelectorAll("span")].find(el => el.textContent.trim() === "Images");
-
-                if (videosOption) {
-                    videosOption.click();
-                    console.log("Selected 'Videos'");
-                }
-                if (imagesOption) {
-                    imagesOption.click();
-                    console.log("Selected 'Images'");
-                }
-            }, 800);
-        }, 3000);
-    }
-
-}, 2000); // Wait 2 seconds for page load
