@@ -1,0 +1,64 @@
+(async () => {
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+  // 1. Open "All filters" panel
+  document.querySelector('button[aria-label*="Show all filters"]')?.click();
+  await sleep(2000); // Wait for modal to load
+
+  // 2. Type and select "From member"
+  const memberName = "Rajesh Kumar";
+  const input = document.querySelector('input[placeholder*="Add a person"]');
+
+  if (input) {
+    input.focus();
+    
+    // Simulate React-compatible typing
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+    nativeInputValueSetter.call(input, memberName);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    console.log(`⌨️ Typed "${memberName}"`);
+    await sleep(3000); // Wait for dropdown
+
+    const suggestion = document.querySelector('ul[role="listbox"] li');
+    if (suggestion) {
+      suggestion.click();
+      console.log(`✅ Selected "${memberName}" from suggestions`);
+    } else {
+      console.warn("⚠️ No suggestion found to click");
+    }
+  } else {
+    console.warn("❌ Input field for 'From member' not found");
+  }
+
+  // 3. Helper to apply filters
+  const apply = async (fieldsetText, optionText) => {
+    const fs = [...document.querySelectorAll('fieldset')].find(f => f.innerText.includes(fieldsetText));
+    if (!fs) return console.warn(`❌ Fieldset not found: ${fieldsetText}`);
+    const lbl = [...fs.querySelectorAll('label')];
+    const match = lbl.find(l => l.innerText.includes(optionText));
+    if (match) {
+      match.click();
+      console.log(`✅ Selected "${optionText}" in "${fieldsetText}"`);
+    } else {
+      console.warn(`❌ Option not found: "${optionText}" in "${fieldsetText}"`);
+    }
+    await sleep(1200);
+  };
+
+  // 4. Apply the filters
+  await apply('Sort by',      'Latest');
+  await apply('Date posted',  'Past month');
+  await apply('Content type', 'Images');
+  await apply('Posted by',    'People you follow');
+
+  // 5. Click "Show results"
+  const btn = [...document.querySelectorAll('button')]
+    .find(b => /show results/i.test(b.innerText));
+  if (btn) {
+    btn.click();
+    console.log('✅ Clicked "Show results"');
+  } else {
+    console.warn('❌ "Show results" button not found');
+  }
+})();
