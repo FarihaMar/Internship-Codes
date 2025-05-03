@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LinkedIn Filter</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 10px; width: 300px; }
+    h3 { text-align: center; margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    select, input[type="text"], button { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; box-sizing: border-box; }
+    .checkbox-group { display: flex; align-items: center; margin-bottom: 5px; }
+    .checkbox-group input { margin-right: 8px; }
+    button { background-color: #0073b1; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #005582; }
+  </style>
+</head>
+<body>
+
+  <h3>Apply LinkedIn Filters</h3>
+
+  <label>Sort By:</label>
+  <select id="sortBy">
+    <option value="relevance">Top Match</option>
+    <option value="date">Latest</option>
+  </select>
+
+  <label>Date Posted:</label>
+  <select id="datePosted">
+    <option value="">Any Time</option>
+    <option value="past-24h">Past 24 hours</option>
+    <option value="past-week">Past week</option>
+    <option value="past-month">Past month</option>
+  </select>
+
+  <label>Content Type:</label>
+  <div class="checkbox-group"><input type="checkbox" id="videos"><label for="videos">Videos</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="images"><label for="images">Images</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="liveVideos"><label for="liveVideos">Live Videos</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="jobPosts"><label for="jobPosts">Job Posts</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="documents"><label for="documents">Documents</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="collabArticles"><label for="collabArticles">Collaborative Articles</label></div>
+
+  <label>From Member:</label>
+  <input type="text" id="personName" placeholder="Enter a name">
+
+  <label>Posted By:</label>
+  <div class="checkbox-group"><input type="checkbox" id="firstConnections"><label for="firstConnections">1st Connections</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="me"><label for="me">Me</label></div>
+  <div class="checkbox-group"><input type="checkbox" id="peopleYouFollow"><label for="peopleYouFollow">People you follow</label></div>
+
+  <button id="submitBtn">Apply Filters</button>
+
+  <script src="popup.js"></script>
+
+</body>
+</html>

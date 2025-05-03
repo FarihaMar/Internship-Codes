@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "LinkedIn Filter Extension",
+  "version": "1.0",
+  "description": "Open LinkedIn and apply filters automatically.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "new_image.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/search/results/content/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
