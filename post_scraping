@@ -1,0 +1,74 @@
+function extractPostData() {
+    const posts = [];
+    const feedItems = document.querySelectorAll('.scaffold-finite-scroll__content > div');
+
+    feedItems.forEach((item, index) => {
+        try {
+            const postContentEl = item.querySelector('.update-components-text');
+            const postContent = postContentEl?.innerText.trim() || "";
+
+            const authorNameEl = item.querySelector('span.feed-shared-actor__name');
+            const authorName = authorNameEl?.innerText.trim() || "";
+
+            const authorRoleEl = item.querySelector('span.feed-shared-actor__description');
+            const authorRole = authorRoleEl?.innerText.trim() || "";
+
+            const authorProfileLinkEl = item.querySelector('a.feed-shared-actor__container-link');
+            const authorProfileLink = authorProfileLinkEl?.href || "";
+
+            const postedOn = item.querySelector('span.feed-shared-actor__sub-description span.visually-hidden')?.innerText || "";
+
+            const likeButton = item.querySelector('button[aria-label*="Like"]');
+            const likeButtonId = likeButton?.getAttribute('id') || "";
+
+            const sendButton = item.querySelector('button[aria-label*="Send"]');
+            const sendButtonId = sendButton?.getAttribute('id') || "";
+
+            // Comments
+            const comments = [];
+            const commentBlocks = item.querySelectorAll('.comments-comment-item');
+            commentBlocks.forEach(commentEl => {
+                const commenter = commentEl.querySelector('.comments-post-meta__name-text')?.innerText.trim() || "";
+                const commentText = commentEl.querySelector('.comments-comment-item__main-content')?.innerText.trim() || "";
+                comments.push({ commented_by: commenter, comment_text: commentText });
+            });
+
+            const postId = `post-${index + 1}`;
+            const authorId = `author-${index + 1}`;
+
+            const postObject = {
+                default_id: index + 1,
+                post_id: postId,
+                author_id: authorId,
+                author_name: authorName,
+                author_role: authorRole,
+                author_degree: "", // Cannot fetch unless part of name
+                author_profile_link: authorProfileLink,
+                post_content: postContent,
+                like_button_id: likeButtonId,
+                send_button_id: sendButtonId,
+                posted_on: postedOn,
+                ai_response: "",
+                engagement_metrics: {},
+                skip_pre_condition: {},
+                skip_post_condition: {},
+                updated_on: new Date().toISOString(),
+                commented_by: "",
+                comment_to_reply: "",
+                allcomments: comments,
+                status: "active",
+                source: "LinkedIn Feed",
+                selected_preset: ""
+            };
+
+            posts.push(postObject);
+        } catch (err) {
+            console.warn(`Failed to parse post ${index + 1}:`, err);
+        }
+    });
+
+    localStorage.setItem("linkedin_posts_feed", JSON.stringify(posts, null, 2));
+    console.log("Saved to localStorage under key: linkedin_posts_feed");
+}
+
+extractPostData();
