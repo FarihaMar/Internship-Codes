@@ -16,9 +16,9 @@ class DMMessageButtons {
         style.textContent = `
             .dm-buttons-container {
                 border: 1px solid #24268d;
-                border-radius: 12px;
-                padding: 10px;
-                margin: 16px 0;
+                border-radius: 12px 12px 0 0; /* Rounded top only */
+                padding: 10px 10px 5px 10px; /* Less padding at bottom */
+                margin: 0;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 10px;
@@ -26,6 +26,8 @@ class DMMessageButtons {
                 overflow-x: auto;
                 background: #ffffff;
                 justify-content: flex-start;
+                position: relative;
+                border-bottom: none; /* Remove bottom border */
             }
 
             .dm-template-btn {
@@ -94,6 +96,68 @@ class DMMessageButtons {
                 gap: 6px;
                 font-size: 14px;
                 color: #24268d;
+                margin-top: 5px;
+            }
+
+            /* New positioning wrapper */
+            .agentlink-dm-wrapper {
+                position: relative;
+                margin-bottom: -1px; /* Align with message box */
+                z-index: 1;
+            }
+
+            /* Adjust LinkedIn's message box to connect visually */
+            .msg-form__msg-content-container {
+                border-radius: 0 0 12px 12px !important;
+                border-top: none !important;
+            }
+
+            /* Loading container styles */
+            .ai-loading-container {
+                animation: fadeIn 0.3s ease-out;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                background: #f5f5f5;
+                margin-bottom: 10px;
+                width: 100%;
+                padding: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .ai-loading-message {
+                font-size: 14px;
+                color: #424242;
+            }
+
+            .stop-button {
+                margin-left: 10px;
+                padding: 3px 8px;
+                font-size: 12px;
+                background: #ffebee;
+                color: #c62828;
+                border: 1px solid #ef9a9a;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .stop-button:hover {
+                background: #ffcdd2 !important;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .dm-error-message {
+                color: #c62828;
+                font-size: 14px;
+                margin-top: 5px;
+                text-align: center;
+                width: 100%;
             }
         `;
         document.head.appendChild(style);
@@ -118,24 +182,31 @@ class DMMessageButtons {
         return powered;
     }
 
-    createLoadingIndicator(button) {
-        const originalText = button.textContent;
-        button.textContent = 'Generating...';
-        button.disabled = true;
+    showError(message, container) {
+        const existingError = container.querySelector('.dm-error-message');
+        if (existingError) existingError.remove();
 
-        return {
-            restore: () => {
-                button.textContent = originalText;
-                button.disabled = false;
-            }
-        };
+        const error = document.createElement('div');
+        error.className = 'dm-error-message';
+        error.textContent = `⚠️ ${message}`;
+        container.appendChild(error);
+
+        setTimeout(() => error.remove(), 5000);
     }
 
     async injectButtons(messageContainer) {
         if (this.processedMessageBoxes.has(messageContainer)) return;
         this.processedMessageBoxes.add(messageContainer);
 
-        if (messageContainer.querySelector('.dm-buttons-container')) return;
+        // Check if wrapper already exists
+        let wrapper = messageContainer.previousElementSibling;
+        if (wrapper && wrapper.classList.contains('agentlink-dm-wrapper')) {
+            return; // Already injected
+        }
+
+        // Create wrapper div
+        wrapper = document.createElement('div');
+        wrapper.className = 'agentlink-dm-wrapper';
 
         const buttonWrapper = document.createElement('div');
         buttonWrapper.className = 'dm-buttons-container';
@@ -171,31 +242,100 @@ class DMMessageButtons {
             btn.addEventListener('click', async (e) => {
                 if (btn.disabled) return;
                 
-                const loading = this.createLoadingIndicator(btn);
-                
+                // Create abort controller for cancellation
+                const abortController = new AbortController();
+                let isCancelled = false;
+
+                // Get all buttons in the container
+                const buttons = buttonWrapper.querySelectorAll('.dm-template-btn');
+                const originalTexts = new Map(Array.from(buttons).map(btn => [btn, btn.textContent]));
+
                 try {
+                    // Hide all buttons and show loading message with stop button
+                    const loadingContainer = document.createElement('div');
+                    loadingContainer.className = 'ai-loading-container';
+                    
+                    const loadingMessage = document.createElement('div');
+                    loadingMessage.className = 'ai-loading-message';
+                    loadingMessage.textContent = '🤖 AgentLink is generating your message...';
+                    
+                    const stopButton = document.createElement('button');
+                    stopButton.className = 'stop-button';
+                    stopButton.innerHTML = '✕ Stop';
+                    
+                    stopButton.onmouseover = () => {
+                        stopButton.style.background = '#ffcdd2';
+                    };
+                    stopButton.onmouseout = () => {
+                        stopButton.style.background = '#ffebee';
+                    };
+                    
+                    stopButton.onclick = () => {
+                        isCancelled = true;
+                        abortController.abort();
+                        loadingMessage.textContent = '⏹️ Stopping generation...';
+                        stopButton.disabled = true;
+                    };
+                    
+                    loadingContainer.appendChild(loadingMessage);
+                    loadingContainer.appendChild(stopButton);
+                    
+                    // Hide all buttons
+                    buttons.forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                    
+                    // Insert loading container
+                    buttonWrapper.insertBefore(loadingContainer, buttonWrapper.firstChild);
+
                     const profileData = await gatherCompleteProfileData();
                     const aiSettings = await getAISettings();
+
+                    if (isCancelled) throw new Error('Generation cancelled by user');
 
                     const response = await chrome.runtime.sendMessage({
                         action: "generateMessage",
                         profileData,
                         config,
-                        aiSettings
+                        aiSettings,
+                        signal: abortController.signal
                     });
 
-                    if (response?.message) {
-                        const messageBox = messageContainer.querySelector('.msg-form__contenteditable[contenteditable="true"]');
-                        if (messageBox) {
-                            messageBox.innerHTML = '';
-                            document.execCommand("insertText", false, response.message);
-                            messageBox.dispatchEvent(new Event("input", { bubbles: true }));
-                        }
+                    if (isCancelled) throw new Error('Generation cancelled by user');
+                    if (response?.error) throw new Error(response.error);
+                    if (!response?.message) throw new Error('Failed to generate message');
+
+                    const messageBox = messageContainer.querySelector('.msg-form__contenteditable[contenteditable="true"]');
+                    if (messageBox) {
+                        // Completely clear the message box including any hidden formatting
+                        messageBox.innerHTML = '<p><br></p>';
+                        
+                        // Focus and select all to ensure we're at the start
+                        messageBox.focus();
+                        document.execCommand('selectAll', false, null);
+                        
+                        // Insert the text directly at the beginning
+                        document.execCommand('insertText', false, response.message);
+                        
+                        // Trigger necessary events
+                        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
+                        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                 } catch (err) {
                     console.error('Error generating AI message:', err);
+                    this.showError(err.message, buttonWrapper);
                 } finally {
-                    loading.restore();
+                    // Remove loading container and restore buttons
+                    const loadingContainer = buttonWrapper.querySelector('.ai-loading-container');
+                    if (loadingContainer) {
+                        loadingContainer.remove();
+                    }
+                    
+                    buttons.forEach(btn => {
+                        btn.style.display = '';
+                        btn.disabled = false;
+                        btn.textContent = originalTexts.get(btn) || btn.getAttribute('data-original-text') || config.name;
+                    });
                 }
             });
 
@@ -203,8 +343,10 @@ class DMMessageButtons {
         });
 
         buttonWrapper.appendChild(this.createAgentLinkBranding());
+        wrapper.appendChild(buttonWrapper);
 
-        messageContainer.parentNode.insertBefore(buttonWrapper, messageContainer.nextSibling);
+        // Insert the wrapper before the message container
+        messageContainer.parentNode.insertBefore(wrapper, messageContainer);
     }
 
     initObserver() {
